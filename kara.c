@@ -28,6 +28,8 @@ int main(int argc, char* argv[]){
   polyA = decomposeGrandNombre(degreA, a);
   polyB = decomposeGrandNombre(degreB, b);
 
+  karatsuba(polyA, degreA, polyB, degreB);
+
   //Pour vérifier le résultat de notre multiplication
   mpz_t res;
   mpz_init(res);
@@ -102,9 +104,33 @@ int* decomposeGrandNombre(int degre, mpz_t P) {
   printf("P=");
   mpz_out_str(stdout,10,tmp);
   printf("\n");
+  //Fin vérif
 
   return polyTable;
 }
 
 void karatsuba(int* P, int degP, int* Q, int degQ) {
+
+  int deg;
+
+  if(degP != degQ) {
+    printf("Les degrés de A et B sont différents, on sait pas (encore) faire\n");
+    return;
+  } else {
+    deg = degP/2;
+  }
+
+  int* A0 = malloc(deg*sizeof(int));
+  int* A1 = malloc(deg*sizeof(int));
+  int* B0 = malloc(deg*sizeof(int));
+  int* B1 = malloc(deg*sizeof(int));
+
+  for(int i = 0 ; i < deg+1 ; i++) {
+    A0[i] = P[i];
+    B0[i] = Q[i];
+    A1[i] = P[i+deg+1];
+    B1[i] = Q[i+deg+1];
+  }
+
+  
 }
