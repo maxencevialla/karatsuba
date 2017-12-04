@@ -5,7 +5,7 @@
 
 int determineDegre(mpz_t P);
 int* decomposeGrandNombre(int degre, mpz_t P);
-void karatsuba(int* P, int degP, int* Q, int degQ);
+int* karatsuba(int* P, int degP, int* Q, int degQ);
 
 int main(int argc, char* argv[]){
 
@@ -44,11 +44,6 @@ int main(int argc, char* argv[]){
   mpz_out_str(stdout,10,res);
   printf("\n");
 
-
-  // mpz_t p;
-  // mpz_init(p);
-  //
-  // mpz_out_str(stdout,10,p);
 }
 
 //Détermination du dégré du polynôme représentatif
@@ -109,9 +104,10 @@ int* decomposeGrandNombre(int degre, mpz_t P) {
   return polyTable;
 }
 
-void karatsuba(int* P, int degP, int* Q, int degQ) {
+int* karatsuba(int* P, int degP, int* Q, int degQ) {
 
   int deg;
+  int sizeDeg = deg*sizeof(int);
 
   if(degP != degQ) {
     printf("Les degrés de A et B sont différents, on sait pas (encore) faire\n");
@@ -120,17 +116,64 @@ void karatsuba(int* P, int degP, int* Q, int degQ) {
     deg = degP/2;
   }
 
-  int* A0 = malloc(deg*sizeof(int));
-  int* A1 = malloc(deg*sizeof(int));
-  int* B0 = malloc(deg*sizeof(int));
-  int* B1 = malloc(deg*sizeof(int));
+  //On découpe A et B pour Karatsuba
+  int* A0 = malloc(sizeDeg);
+  int* A1 = malloc(sizeDeg);
+  int* B0 = malloc(sizeDeg);
+  int* B1 = malloc(sizeDeg);
+  int* SA = malloc(sizeDeg);
+  int* SB = malloc(sizeDeg);
 
   for(int i = 0 ; i < deg+1 ; i++) {
     A0[i] = P[i];
     B0[i] = Q[i];
     A1[i] = P[i+deg+1];
     B1[i] = Q[i+deg+1];
+    SA[i] = A0[i]+A1[i];
+    SB[i] = B0[i]+B1[i];
   }
 
-  
+  int* res;
+
+  if(deg == 0) {
+    res = malloc(sizeof(int));
+    res[0] = A0[0]*B0[0];
+  } else {
+    int* P2 = malloc(sizeDeg);
+    int* P0 = malloc(sizeDeg);
+    int* P1 = malloc(sizeDeg);
+    P2 = karatsuba(A1, deg, B1, deg);
+    P0 = karatsuba(A0, deg, B0, deg);
+    P1 = karatsuba(SA, deg, SB, deg);
+
+    free(A0);
+    free(A1);
+    free(B0);
+    free(B1);
+    free(SA);
+    free(SB);
+
+    for(int i = 0 ; i < deg+1 ; i++) {
+      P1[i] = P1[i]-P2[i]-P0[i];
+    }
+
+    res = malloc(2*sizeDeg);
+
+    int j;
+    for(j=0 ; j<(deg/2) ; j++) {
+      res[j] = P0[j];
+    }
+    for(j=(deg/2) ; j<deg ; j++) {
+      res[j] = P1[j-deg/2];
+    }
+    for(j=deg ; j<2*deg ; j++) {
+      res[j] = P2[j-deg];
+    }
+
+    free(P0);
+    free(P1);
+    free(P2);
+
+    return res;
+  }
 }
